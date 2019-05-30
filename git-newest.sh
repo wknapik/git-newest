@@ -52,7 +52,7 @@ unsorted_uniq() {
     local i=0; while IFS= read -r -d '' line; do echo -ne "$((++i)) $line\0"; done|sort -zuk2|sort -znk1|cut -z -d' ' -f2-
 }
 
-# $@ := [dir1 [dir1 [...]]]
+# $@ := [dir1 [dir2 [...]]]
 git_newest_directories() {
     git_newest_files "$@"|grep -zo '.*/'|unsorted_uniq
 }
