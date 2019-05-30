@@ -24,7 +24,7 @@ to least recently changed.
 
 # $@ := program_arguments
 parse_command_line() {
-    local -a options; read -ra options <<<"$(getopt -u -od,f,h -ldirectories,files,help -n"$prog" -- "$@" || kill -USR1 "$$")"
+    local -a options; read -ra options <<<"$(getopt -uod,f,h -ldirectories,files,help -n"$prog" -- "$@" || kill -USR1 "$$")"
     readonly options
     set -- "${options[@]}"
     while true; do
@@ -49,7 +49,7 @@ git_newest_files() {
 # $@ := ""
 # Based on https://unix.stackexchange.com/questions/444795#answer-504047
 unsorted_uniq() {
-    local i=0; while IFS= read -r -d '' line; do echo -ne "$((++i)) $line\0"; done|sort -zuk2|sort -znk1|cut -zd' ' -f2-
+    local i=0; while IFS= read -rd '' line; do echo -ne "$((++i)) $line\0"; done|sort -zuk2|sort -znk1|cut -zd' ' -f2-
 }
 
 # $@ := [dir1 [dir2 [...]]]
