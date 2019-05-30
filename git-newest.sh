@@ -15,9 +15,9 @@ help() {
 Print a NUL-separated list of versioned files or directories ordered from most
 to least recently changed.
 
-  -d | --directories\\t\\tlist directories [$([[ "${opt[ty]}" == directories ]] && echo true || echo false)]
-  -f | --files\\t\\t\\tlist files [$([[ "${opt[ty]}" == files ]] && echo true || echo false)]
-  -h | --help\\t\\t\\tprint this help and exit"
+  -d | --directories\t\tlist directories [$([[ "${opt[ty]}" == directories ]] && echo true || echo false)]
+  -f | --files\t\t\tlist files [$([[ "${opt[ty]}" == files ]] && echo true || echo false)]
+  -h | --help\t\t\tprint this help and exit"
   exit 2
 }
 
