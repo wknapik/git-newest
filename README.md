@@ -3,11 +3,11 @@ most to the least recently changed.
 
 E.g.:
 ```
-# Print the most recently changed files under the current directory.
+# Print files under the current directory and below ordered by the recency of changes.
 % git-newest.sh
 
-# Print directories under unit_tests/ ordered by the recency of changes to the files in them.
-% git-newest.sh -d unit_tests
+# Print directories under unit_tests/ and below ordered by the recency of changes to the files in them.
+% git-newest.sh -d tests
 
 # Replace NULs with newlines.
 % git-newest.sh ...|tr '\0' '\n'
