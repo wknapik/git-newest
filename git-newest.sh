@@ -43,13 +43,13 @@ parse_command_line() {
 # $@ := [dir1 [dir2 [...]]]
 # Based on https://stackoverflow.com/questions/19362345#answer-40535274
 git_newest_files() {
-    git ls-files -z -- "$@"|xargs -0 -P"$(nproc)" -n1 -I{} -- git log -z -1 --format="%at {}" "{}"|sort -zrn|cut -z -d' ' -f2-
+    git ls-files -z -- "$@"|xargs -0P"$(nproc)" -n1 -I{} -- git log -z -1 --format="%at {}" "{}"|sort -zrn|cut -zd' ' -f2-
 }
 
 # $@ := ""
 # Based on https://unix.stackexchange.com/questions/444795#answer-504047
 unsorted_uniq() {
-    local i=0; while IFS= read -r -d '' line; do echo -ne "$((++i)) $line\0"; done|sort -zuk2|sort -znk1|cut -z -d' ' -f2-
+    local i=0; while IFS= read -r -d '' line; do echo -ne "$((++i)) $line\0"; done|sort -zuk2|sort -znk1|cut -zd' ' -f2-
 }
 
 # $@ := [dir1 [dir2 [...]]]
