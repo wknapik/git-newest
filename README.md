@@ -6,7 +6,7 @@ E.g.:
 # Print files under the current directory and below ordered by the recency of changes.
 % git-newest.sh
 
-# Print directories under unit_tests/ and below ordered by the recency of changes to the files in them.
+# Print directories under tests/ and below ordered by the recency of changes to the files in them.
 % git-newest.sh -d tests
 
 # Replace NULs with newlines.
