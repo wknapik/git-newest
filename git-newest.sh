@@ -7,6 +7,7 @@ shopt -s inherit_errexit >/dev/null 2>&1 || true
 readonly prog="$(basename "$0")"
 declare -A opt=([ty]=files)
 declare -a paths=(.)
+trap help USR1
 
 # $@ := ""
 help() {
@@ -23,7 +24,7 @@ to least recently changed.
 
 # $@ := program_arguments
 parse_command_line() {
-    local -a options; read -ra options <<<"$(getopt -u -o d,f,h -l directories,files,help -n "$prog" -- "$@" || true)"
+    local -a options; read -ra options <<<"$(getopt -u -o d,f,h -l directories,files,help -n "$prog" -- "$@" || kill -USR1 "$$")"
     readonly options
     set -- "${options[@]}"
     while true; do
