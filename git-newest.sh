@@ -48,8 +48,8 @@ parse_command_line() {
 depth() {
     local -r fod="${1:?}" min_depth="${2:-0}" max_depth="$3"
     [[ "$fod" == directories ]] || local -r suf=$
-    case "$fod,$min_depth,$max_depth" in
-        *,0,) cat;;
+    case "$min_depth,$max_depth" in
+        0,) cat;;
         *) grep -zoE "^([^\/]*/[^\/]*){$min_depth,$max_depth}$suf";;
     esac
 }
