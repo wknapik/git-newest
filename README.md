@@ -26,5 +26,7 @@ Tests that have changed recently are the most likely to fail and should be run
 first, so that if they fail, they fail as fast, as possible.
 
 The script has to be run from a git checkout and only uses the author dates
-(%at) from git. The `--max-depth` switch, when used in combination with
-`--directories`, takes into account changes deeper in the tree.
+(%at) from git.
+
+The `--max-depth` switch, when used in combination with `--directories`, takes
+into account changes deeper in the tree.
