@@ -11,6 +11,10 @@ E.g.:
 # Print directories under tests/ and below ordered by the recency of changes to the files in them.
 % git-newest.sh -d tests
 
+# Print directories directly under foo/bar/ matching the *-tests pattern ordered
+# by the recency of changes to the files in them and their subdirectories.
+% git-newest.sh -d --max-depth 3 foo/bar/*-tests
+
 # Replace NULs with newlines.
 % git-newest.sh ...|tr '\0' '\n'
 ```
