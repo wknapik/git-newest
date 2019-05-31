@@ -5,7 +5,7 @@ shopt -s inherit_errexit >/dev/null 2>&1 || true
 
 # Configuration.
 readonly prog="$(basename "$0")"
-declare -A opt=([ty]=files)
+declare -A opt=([ty]=files [min-depth]=0 [max-depth]="")
 declare -a paths=(.)
 trap help USR1
 
@@ -18,19 +18,23 @@ to least recently changed.
 
   -d | --directories\t\tlist directories [$([[ "${opt[ty]}" == directories ]] && echo true || echo false)]
   -f | --files\t\t\tlist files [$([[ "${opt[ty]}" == files ]] && echo true || echo false)]
+  -x | --min-depth\t\tminimum number of slashes [${opt[min-depth]}]
+  -y | --max-depth\t\tmaximum number of slashes [${opt[max-depth]}]
   -h | --help\t\t\tprint this help and exit"
-  exit 2
+    exit 2
 }
 
 # $@ := program_arguments
 parse_command_line() {
-    local -a options; read -ra options <<<"$(getopt -uod,f,h -ldirectories,files,help -n"$prog" -- "$@" || kill -USR1 "$$")"
-    readonly options
+    local -a options; read -ra options <<<"$(getopt -uo d,f,h,x:,y: -l directories,files,help,min-depth:,max-depth: \
+        -n "$prog" -- "$@" || kill -USR1 "$$")"
     set -- "${options[@]}"
     while true; do
         case "$1" in
             -d|--directories) opt[ty]=directories; shift;;
             -f|--files) opt[ty]=files; shift;;
+            -x|--min-depth) opt[min-depth]="$2"; shift 2;;
+            -y|--max-depth) opt[max-depth]="$2"; shift 2;;
             -h|--help) help;;
             --) shift; break;;
             *) break;;
@@ -40,10 +44,21 @@ parse_command_line() {
     readonly opt paths
 }
 
-# $@ := [dir1 [dir2 [...]]]
+# $@ := min_depth max_depth
+depth() {
+    local -r min_depth="${1:-0}" max_depth="$2"
+    case "$min_depth,$max_depth" in
+        0,) cat;;
+        *) grep -zoE "^([^\/]*/[^\/]*){$min_depth,$max_depth}";;
+    esac
+}
+
+# $@ := min_depth max_depth [dir1 [dir2 [...]]]
 # Based on https://stackoverflow.com/questions/19362345#answer-40535274
 git_newest_files() {
-    git ls-files -z -- "$@"|xargs -0P"$(nproc)" -n1 -I{} -- git log -z -1 --format="%at {}" "{}"|sort -zrn|cut -zd' ' -f2-
+    local -r min_depth="${1:-0}" max_depth="$2"
+    git ls-files -z -- "${@:3}"|depth "$min_depth" "$max_depth"|\
+        xargs -0P "$(nproc)" -n1 -I{} -- git log -z -1 --format="%at {}" "{}"|sort -zrn|cut -zd' ' -f2-
 }
 
 # $@ := ""
@@ -52,15 +67,16 @@ unsorted_uniq() {
     local i=0; while IFS= read -rd '' line; do echo -ne "$((++i)) $line\0"; done|sort -zuk2|sort -znk1|cut -zd' ' -f2-
 }
 
-# $@ := [dir1 [dir2 [...]]]
+# $@ := min_depth max_depth [dir1 [dir2 [...]]]
 git_newest_directories() {
-    git_newest_files "$@"|grep -zo '.*/'|unsorted_uniq
+    local -r min_depth="${1:-0}" max_depth="$2"
+    git_newest_files 0 "" "${@:3}"|depth "$min_depth" "$max_depth"|grep -zo '.*/'|unsorted_uniq
 }
 
 # $@ := program_arguments
 main() {
     parse_command_line "$@"
-    git_newest_"${opt[ty]}" "${paths[@]}"
+    git_newest_"${opt[ty]}" "${opt[min-depth]}" "${opt[max-depth]}" "${paths[@]}"
 }
 
 main "$@"

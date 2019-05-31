@@ -1,3 +1,5 @@
+WORK IN PROGRESS
+
 Print a NUL-separated list of versioned files, or directories ordered from the
 most to the least recently changed.
 
