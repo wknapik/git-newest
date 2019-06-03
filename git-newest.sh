@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# Requirements: bash, coreutils, git, grep, find-utils (for xargs), util-linux (for getopt, kill).
+
 set -eEo pipefail
 shopt -s inherit_errexit >/dev/null 2>&1 || true
 shopt -s extglob
