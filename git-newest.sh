@@ -9,6 +9,8 @@ trap help USR1
 readonly prog="$(basename "$0")"
 declare -A opt=([ty]=files [min-depth]=0 [max-depth]="")
 declare -a paths=(.)
+readonly cut="$([[ "$(uname)" == Darwin ]] && echo gcut || echo cut)"
+readonly nproc="$(nproc 2>/dev/null || gnproc 2>/dev/null || sysctl -n hw.ncpu)"
 
 # $@ := error_message
 error() { echo "ERROR: $*." >&2; exit 4; }
@@ -51,7 +53,7 @@ parse_command_line() {
 # $@ := ""
 # Based on https://unix.stackexchange.com/questions/444795#answer-504047
 unsorted_uniq() {
-    local i=0; while IFS= read -rd '' line; do echo -ne "$((++i)) $line\0"; done|sort -zuk2|sort -znk1|cut -zd' ' -f2-
+    local i=0; while IFS= read -rd '' line; do echo -ne "$((++i)) $line\0"; done|sort -zuk2|sort -znk1|"$cut" -zd' ' -f2-
 }
 
 # $@ := "files" | "directories" min_depth max_depth
@@ -72,7 +74,7 @@ fltr() {
 git_newest_files() {
     local -r min_depth="${1:-0}" max_depth="$2"
     git ls-files -z -- "${@:3}"|fltr files "$min_depth" "$max_depth"|\
-        xargs -0P "$(nproc)" -n1 -I{} -- git log -z -1 --format="%at {}" "{}"|sort -zrn|cut -zd' ' -f2-
+        xargs -0P "$nproc" -n1 -I{} -- git log -z -1 --format="%at {}" "{}"|sort -zrn|"$cut" -zd' ' -f2-
 }
 
 # $@ := min_depth max_depth [dir1 [dir2 [...]]]
