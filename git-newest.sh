@@ -44,13 +44,14 @@ parse_command_line() {
     readonly opt paths
 }
 
-# $@ := files_or_directories min_depth max_depth
-depth() {
-    local -r fod="${1:?}" min_depth="${2:-0}" max_depth="$3"
-    [[ "$fod" == directories ]] || local -r suf=$
-    case "$min_depth,$max_depth" in
-        0,) cat;;
-        *) grep -zoE "^([^\/]*/[^\/]*){$min_depth,$max_depth}$suf";;
+# $@ := "files" | "directories" min_depth max_depth
+fltr() {
+    local -r ty="${1:?}" min_depth="${2:-0}" max_depth="$3"
+    case "$ty,$min_depth,$max_depth" in
+        files,0,) cat;;
+        *,0,) grep -zo '.*/';;
+        files,*) grep -zoE "^([^/]*/[^/]*){$min_depth,$max_depth}$";;
+        *) grep -zoE "^([^/]*/){$min_depth,$max_depth}";;
     esac
 }
 
@@ -58,7 +59,7 @@ depth() {
 # Based on https://stackoverflow.com/questions/19362345#answer-40535274
 git_newest_files() {
     local -r min_depth="${1:-0}" max_depth="$2"
-    git ls-files -z -- "${@:3}"|depth files "$min_depth" "$max_depth"|\
+    git ls-files -z -- "${@:3}"|fltr files "$min_depth" "$max_depth"|\
         xargs -0P "$(nproc)" -n1 -I{} -- git log -z -1 --format="%at {}" "{}"|sort -zrn|cut -zd' ' -f2-
 }
 
@@ -71,7 +72,7 @@ unsorted_uniq() {
 # $@ := min_depth max_depth [dir1 [dir2 [...]]]
 git_newest_directories() {
     local -r min_depth="${1:-0}" max_depth="$2"
-    git_newest_files 0 "" "${@:3}"|depth directories "$min_depth" "$max_depth"|grep -zo '.*/'|unsorted_uniq
+    git_newest_files 0 "" "${@:3}"|fltr directories "$min_depth" "$max_depth"|unsorted_uniq
 }
 
 # $@ := program_arguments
