@@ -2,12 +2,16 @@
 
 set -eEo pipefail
 shopt -s inherit_errexit >/dev/null 2>&1 || true
+shopt -s extglob
+trap help USR1
 
-# Configuration.
+# Defaults.
 readonly prog="$(basename "$0")"
 declare -A opt=([ty]=files [min-depth]=0 [max-depth]="")
 declare -a paths=(.)
-trap help USR1
+
+# $@ := error_message
+error() { echo "ERROR: $*." >&2; exit 4; }
 
 # $@ := ""
 help() {
@@ -53,11 +57,13 @@ unsorted_uniq() {
 # $@ := "files" | "directories" min_depth max_depth
 fltr() {
     local -r ty="${1:?}" min_depth="${2:-0}" max_depth="$3"
+    ((min_depth <= "${max_depth:-"$min_depth"}")) || error "min-depth cannot be larger than max-depth"
     case "$ty,$min_depth,$max_depth" in
-        files,0,) cat;;
-        *,0,) grep -zo '.*/'|unsorted_uniq;;
-        files,*) grep -zoE "^([^/]*/[^/]*){$min_depth,$max_depth}$";;
-        *) grep -zoE "^([^/]*/){$min_depth,$max_depth}"|unsorted_uniq;;
+        files,0,)                      cat;;
+        directories,0,)                grep -zo '.*/'|unsorted_uniq;;
+        files,+([0-9]),*([0-9]))       grep -zoE "^([^/]*/[^/]*){$min_depth,$max_depth}$";;
+        directories,+([0-9]),*([0-9])) grep -zoE "^([^/]*/){$min_depth,$max_depth}"|unsorted_uniq;;
+        *)                             error "Invalid arguments: type=$ty; min-depth=$min_depth; max-depth=$max_depth";;
     esac
 }
 
